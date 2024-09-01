@@ -36,53 +36,22 @@ const PersonalityTest = () => {
       CreativeArts: 0,
       IntellectualPursuits: 0,
       PhysicalActivities: 0,
-      ProblemSolving: 0,
-      Leadership: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0,
-      BusinessEntrepreneurship: 0,
-      SpecializedKnowledge: 0
     },
     vocation: {
       ProblemSolving: 0,
       Leadership: 0,
       SpecializedKnowledge: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0,
-      BusinessEntrepreneurship: 0
     },
     mission: {
       InterpersonalSkills: 0,
       CommunityBuilding: 0,
       EducationMentorship: 0,
       SocialCauses: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      ProblemSolving: 0,
-      Leadership: 0,
-      BusinessEntrepreneurship: 0,
-      SpecializedKnowledge: 0
     },
     profession: {
       BusinessEntrepreneurship: 0,
       SpecializedKnowledge: 0,
       Leadership: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      ProblemSolving: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0
     },
   });
   const router = useRouter();
@@ -270,7 +239,6 @@ const PersonalityTest = () => {
       ],
     },
   ];
- 
   const handleSubmit = () => {
     if (selectedOption) {
       const { category, subcategory } = selectedOption;
@@ -293,7 +261,7 @@ const PersonalityTest = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-red-500 via-blue-200 to-blue-500">
+    <div className="min-h-screen flex justify-center items-center bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Discover Your Ikigai
@@ -308,7 +276,7 @@ const PersonalityTest = () => {
               key={index}
               onClick={() => setSelectedOption(option)}
               className={`p-6 border rounded-lg flex items-center justify-center text-lg font-medium transition-transform transform hover:scale-105 ${
-                selectedOption?.label === option.label
+                selectedOption === option
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100 text-gray-800"
               }`}

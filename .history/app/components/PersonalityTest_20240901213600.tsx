@@ -293,7 +293,7 @@ const PersonalityTest = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-red-500 via-blue-200 to-blue-500">
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-red-500 via-blue-200 to-blue-200">
       <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Discover Your Ikigai

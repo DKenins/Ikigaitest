@@ -112,14 +112,16 @@ const ResultsPage = () => {
       SocialCauses: 0
     },
   });
+  return reports[category][subcategory];
+};
 
+const ResultsPage = () => {
+  const [scores, setScores] = useState<Record<Category, Record<Subcategory, number>>>({});
   const [dominantCategory, setDominantCategory] = useState<Category | null>(null);
   const [secondaryCategory, setSecondaryCategory] = useState<Category | null>(null);
 
   useEffect(() => {
-    const storedScores = JSON.parse(
-      localStorage.getItem("ikigaiScores") || "{}"
-    ) as Record<Category, Record<Subcategory, number>>;
+    const storedScores = JSON.parse(localStorage.getItem("ikigaiScores") || "{}");
     setScores(storedScores);
 
     const categoryTotals: Record<Category, number> = {
@@ -129,14 +131,13 @@ const ResultsPage = () => {
       profession: 0,
     };
 
-    // Calculate total scores for each main category
-    for (const category in categoryTotals) {
-      categoryTotals[category as Category] = Object.values(
-        storedScores[category as Category]
-      ).reduce((acc: number, val: number) => acc + val, 0);
+    for (const cat of Object.keys(storedScores) as Category[]) {
+      categoryTotals[cat] = Object.values(storedScores[cat]).reduce(
+        (acc: number, val: number) => acc + val,
+        0
+      );
     }
 
-    // Determine dominant and secondary categories
     const sortedCategories = Object.keys(categoryTotals).sort(
       (a, b) => categoryTotals[b as Category] - categoryTotals[a as Category]
     );
@@ -146,46 +147,49 @@ const ResultsPage = () => {
 
   if (!dominantCategory || !secondaryCategory) return null;
 
-  const dominantReport = getIkigaiReport(dominantCategory);
-  const secondaryReport = getIkigaiReport(secondaryCategory, true);
+  const dominantSubcategory = Object.keys(scores[dominantCategory]).reduce((a, b) =>
+    scores[dominantCategory][a as Subcategory] > scores[dominantCategory][b as Subcategory] ? a : b
+  ) as Subcategory;
+  const secondarySubcategory = Object.keys(scores[secondaryCategory]).reduce((a, b) =>
+    scores[secondaryCategory][a as Subcategory] > scores[secondaryCategory][b as Subcategory] ? a : b
+  ) as Subcategory;
 
-  // Data for pie chart for main categories
+  const dominantReport = getIkigaiReport(dominantCategory, dominantSubcategory);
+  const secondaryReport = getIkigaiReport(secondaryCategory, secondarySubcategory);
+
   const mainCategoryData = {
-    labels: Object.keys(scores).map((category) => category.charAt(0).toUpperCase() + category.slice(1)),
+    labels: Object.keys(categoryTotals).map((label) =>
+      label.charAt(0).toUpperCase() + label.slice(1)
+    ),
     datasets: [
       {
-        data: Object.keys(scores).map(category =>
-          Object.values(scores[category as Category]).reduce((a, b) => a + b, 0)
-        ),
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
-        hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+        data: Object.values(categoryTotals),
+        backgroundColor: ["#F87171", "#60A5FA", "#34D399", "#FBBF24"],
+        hoverBackgroundColor: ["#F87171", "#60A5FA", "#34D399", "#FBBF24"],
       },
     ],
   };
 
-  // Filter relevant subcategories for the dominant category
-  const subcategoryLabels = Object.keys(scores[dominantCategory]).filter(
-    subcategory => scores[dominantCategory][subcategory as Subcategory] > 0
-  ).map(formatSubcategoryLabel);
-
-  // Data for pie chart based on the dominant category's subcategories
-  const subcategoryData = {
-    labels: subcategoryLabels,
+  const subCategoryData = {
+    labels: Object.keys(scores[dominantCategory]).map((label) =>
+      label
+        .replace(/([a-z])([A-Z])/g, "$1 $2")
+        .charAt(0)
+        .toUpperCase() + label.slice(1)
+    ),
     datasets: [
       {
-        data: subcategoryLabels.map((subcategory) => scores[dominantCategory][subcategory.replace(/\s+/g, '') as Subcategory]),
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
-        hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+        data: Object.values(scores[dominantCategory]),
+        backgroundColor: ["#F87171", "#60A5FA", "#34D399", "#FBBF24"],
+        hoverBackgroundColor: ["#F87171", "#60A5FA", "#34D399", "#FBBF24"],
       },
     ],
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gradient-to-r fbg-gradient-to-r from-red-500 via-blue-200 to-blue-500">
-      <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          Your Ikigai Results
-        </h1>
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-r from-green-200 via-blue-200 to-purple-200 p-8">
+      <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full mb-12">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Your Ikigai Results</h1>
 
         <p className="text-xl text-gray-600 mb-8 text-center font-bold">
           Dominant Element: {dominantReport.title}
@@ -196,47 +200,30 @@ const ResultsPage = () => {
           Secondary Element: {secondaryReport.title}
         </p>
         <p className="text-md text-gray-600 mb-6">{secondaryReport.content}</p>
-      </div>
 
-      {/* Pie Chart for Main Categories */}
-      <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full mb-8">
-        <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
-          Main Category Distribution
-        </h3>
-        <div className="flex justify-center">
-          <div className="w-2/5">
-            <Pie data={mainCategoryData} />
-          </div>
-        </div>
-      </div>
-
-      {/* Roadmap */}
-      <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full mb-8">
-        <h3 className="text-lg font-bold text-gray-800 mt-6 mb-4">
-          Roadmap:
-        </h3>
-        <ul className="list-disc list-inside text-gray-600">
-          <li><strong>1-3 Months:</strong> Start by exploring introductory resources and opportunities related to {dominantReport.title}. Engage in small projects or volunteer work that aligns with this element.</li>
-          <li><strong>3-6 Months:</strong> Seek out more substantial roles or projects that deepen your involvement in both {dominantReport.title} and {secondaryReport.title}. Begin building a network of contacts in these areas.</li>
-          <li><strong>6-12 Months:</strong> Focus on gaining advanced knowledge or certifications related to {dominantReport.title}. Look for ways to integrate {secondaryReport.title} into your long-term goals.</li>
-          <li><strong>Beyond 12 Months:</strong> Aim to establish a career or a long-term role that fully aligns with your {dominantReport.title} and {secondaryReport.title}. Consider mentoring others in these areas to further solidify your expertise.</li>
+        <h3 className="text-lg font-bold text-gray-800 mt-6 mb-4 text-center">Action Plan:</h3>
+        <ul className="list-disc list-inside text-gray-600 mb-8">
+          <li>
+            Explore career opportunities aligned with{" "}
+            <strong>{dominantReport.title}</strong> and <strong>{secondaryReport.title}</strong>.
+          </li>
+          <li>
+            Further your education in areas that resonate with{" "}
+            <strong>{dominantReport.title}</strong> and <strong>{secondaryReport.title}</strong>.
+          </li>
         </ul>
       </div>
 
-      {/* Pie Chart for Subcategories */}
-      <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full">
-        <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
-          {dominantReport.title} Subcategories
-        </h3>
-        <div className="flex justify-center">
-          <div className="w-2/5">
-            <Pie data={subcategoryData} />
-          </div>
+      <div className="flex justify-center items-center space-x-12">
+        <div className="w-1/2">
+          <Pie data={mainCategoryData} options={{ maintainAspectRatio: false }} />
+        </div>
+        <div className="w-1/2">
+          <Pie data={subCategoryData} options={{ maintainAspectRatio: false }} />
         </div>
       </div>
     </div>
   );
 };
-
 
 export default ResultsPage;

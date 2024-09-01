@@ -25,28 +25,27 @@ type ReportContent = {
   content: string;
 };
 
-const getIkigaiReport = (category: Category, isSecondary: boolean = false): ReportContent => {
-  const elementType = isSecondary ? 'secondary' : 'dominant';
+const getIkigaiReport = (category: Category): ReportContent => {
   const reports: Record<Category, ReportContent> = {
     passion: {
       title: "Passion",
       content:
-        `Your ${elementType} Ikigai element is Passion. You thrive when engaging in activities that ignite your creativity and allow you to express yourself. Pursuing careers or hobbies that align with your passions, such as art, music, or writing, can bring you deep fulfillment. Consider also integrating your passions into your daily life by setting aside time for creative projects or exploring new artistic outlets.`,
+        "Your dominant Ikigai element is Passion. You thrive when engaging in activities that ignite your creativity and allow you to express yourself. Pursuing careers or hobbies that align with your passions, such as art, music, or writing, can bring you deep fulfillment. Consider also integrating your passions into your daily life by setting aside time for creative projects or exploring new artistic outlets.",
     },
     vocation: {
       title: "Vocation",
       content:
-        `Your ${elementType} Ikigai element is Vocation. You excel in areas where you can apply your skills and expertise to solve problems and achieve mastery. Careers that challenge your intellect and require a high level of proficiency, such as engineering, IT, or specialized trades, will be highly satisfying for you. Seek out opportunities for continuous learning and skill development to stay engaged and motivated.`,
+        "Your dominant Ikigai element is Vocation. You excel in areas where you can apply your skills and expertise to solve problems and achieve mastery. Careers that challenge your intellect and require a high level of proficiency, such as engineering, IT, or specialized trades, will be highly satisfying for you. Seek out opportunities for continuous learning and skill development to stay engaged and motivated.",
     },
     mission: {
       title: "Mission",
       content:
-        `Your ${elementType} Ikigai element is Mission. You are driven by a sense of purpose and a desire to make a positive impact on the world. Careers in social work, education, or community development may be particularly rewarding for you. Your ability to connect with others and contribute to meaningful causes will lead to a fulfilling and purpose-driven life. Consider ways to integrate your mission into both your professional and personal life.`,
+        "Your dominant Ikigai element is Mission. You are driven by a sense of purpose and a desire to make a positive impact on the world. Careers in social work, education, or community development may be particularly rewarding for you. Your ability to connect with others and contribute to meaningful causes will lead to a fulfilling and purpose-driven life. Consider ways to integrate your mission into both your professional and personal life.",
     },
     profession: {
       title: "Profession",
       content:
-        `Your ${elementType} Ikigai element is Profession. You are motivated by professional success and the pursuit of tangible goals. Careers in business, entrepreneurship, or leadership roles where you can apply your skills and drive to achieve significant outcomes will suit you well. Focus on setting clear objectives and building a strong network to advance your career. Balancing your professional ambitions with personal fulfillment will be key to long-term happiness.`,
+        "Your dominant Ikigai element is Profession. You are motivated by professional success and the pursuit of tangible goals. Careers in business, entrepreneurship, or leadership roles where you can apply your skills and drive to achieve significant outcomes will suit you well. Focus on setting clear objectives and building a strong network to advance your career. Balancing your professional ambitions with personal fulfillment will be key to long-term happiness.",
     },
   };
 
@@ -63,53 +62,22 @@ const ResultsPage = () => {
       CreativeArts: 0,
       IntellectualPursuits: 0,
       PhysicalActivities: 0,
-      ProblemSolving: 0,
-      Leadership: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0,
-      BusinessEntrepreneurship: 0,
-      SpecializedKnowledge: 0
     },
     vocation: {
       ProblemSolving: 0,
       Leadership: 0,
       SpecializedKnowledge: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0,
-      BusinessEntrepreneurship: 0
     },
     mission: {
       InterpersonalSkills: 0,
       CommunityBuilding: 0,
       EducationMentorship: 0,
       SocialCauses: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      ProblemSolving: 0,
-      Leadership: 0,
-      BusinessEntrepreneurship: 0,
-      SpecializedKnowledge: 0
     },
     profession: {
       BusinessEntrepreneurship: 0,
       SpecializedKnowledge: 0,
       Leadership: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      ProblemSolving: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0
     },
   });
 
@@ -147,7 +115,7 @@ const ResultsPage = () => {
   if (!dominantCategory || !secondaryCategory) return null;
 
   const dominantReport = getIkigaiReport(dominantCategory);
-  const secondaryReport = getIkigaiReport(secondaryCategory, true);
+  const secondaryReport = getIkigaiReport(secondaryCategory);
 
   // Data for pie chart for main categories
   const mainCategoryData = {
@@ -181,7 +149,7 @@ const ResultsPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gradient-to-r fbg-gradient-to-r from-red-500 via-blue-200 to-blue-500">
+    <div className="min-h-screen flex flex-col items-center bg-gray-50">
       <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           Your Ikigai Results
@@ -237,6 +205,5 @@ const ResultsPage = () => {
     </div>
   );
 };
-
 
 export default ResultsPage;
