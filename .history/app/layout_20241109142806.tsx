@@ -8,8 +8,6 @@ const poppins = Poppins({
   variable: '--font-poppins',
 });
 
-import { fontHeading, fontBody } from 'path/to/font/definitions'; // Ensure correct path
-
 export default function RootLayout({
   children,
 }: {
@@ -22,8 +20,12 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
         />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Akwe+Pro:wght@400;500;600;700&display=swap"
+        />
       </head>
-      <body className={`${fontHeading.variable} ${fontBody.variable} antialiased font-body`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>
