@@ -319,7 +319,6 @@ const ResultsPage = () => {
     setDominantCategory(sortedCategories[0] as Category);
     setSecondaryCategory(sortedCategories[1] as Category);
     console.log("Dominant Category:", sortedCategories[0]);
-    console.log("Secondary Category:", sortedCategories[1]);
   }, []);
 
   if (!dominantCategory || !secondaryCategory) return null;
@@ -333,7 +332,6 @@ const ResultsPage = () => {
     { name: "Mission", value: scores.mission.InterpersonalSkills + scores.mission.CommunityBuilding + scores.mission.EducationMentorship + scores.mission.SocialCauses },
     { name: "Profession", value: scores.profession.BusinessEntrepreneurship + scores.profession.SpecializedKnowledge + scores.profession.Leadership },
   ];
-  console.log("Main Category Data:", mainCategoryData);
 
   const subcategoryData = Object.keys(scores[dominantCategory])
     .filter((subcategory) => scores[dominantCategory][subcategory as Subcategory] > 0)
@@ -341,7 +339,6 @@ const ResultsPage = () => {
       name: formatSubcategoryLabel(subcategory),
       value: scores[dominantCategory][subcategory as Subcategory],
     }));
-  console.log("Subcategory Data:", subcategoryData);
 
   // Generate dynamic summary
   const dynamicSummary = generateDynamicSummary(dominantCategory, secondaryCategory, Object.keys(scores[dominantCategory]));
