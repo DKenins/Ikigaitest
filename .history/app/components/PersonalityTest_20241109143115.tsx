@@ -1,104 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion"; // Import Framer Motion for animations
-
-const colors = {
-  primary: "#1D4ED8",  // Dark blue
-  secondary: "#6B7280",  // Gray
-  background: "#F3F4F6",  // Light gray
-  white: "#FFFFFF",
-  hover: "#2563EB",  // Lighter blue
-  questionBackground: "#E5E7EB",  // Light gray for question container
-  questionText: "#374151"  // Darker gray for text
+ 
+const ProgressBar: React.FC<{ currentQuestion: number, totalQuestions: number }> = ({ currentQuestion, totalQuestions }) => {
+  return (
+    <div className="w-full max-w-2xl mx-auto mb-8">
+      <div className="flex justify-between">
+        {Array.from({ length: totalQuestions }, (_, i) => (
+          <div
+            key={i}
+            className={`w-4 h-4 rounded-full ${
+              i < currentQuestion ? "bg-blue-500" : "bg-blue-200"
+            }`}
+          />
+        ))}
+      </div>
+      <p className="text-center text-blue-200 mt-2">Question {currentQuestion} of {totalQuestions}</p>
+    </div>
+  );
 };
-
-type Category = "passion" | "vocation" | "mission" | "profession";
-type Subcategory =
-  | "CreativeArts"
-  | "IntellectualPursuits"
-  | "PhysicalActivities"
-  | "ProblemSolving"
-  | "Leadership"
-  | "InterpersonalSkills"
-  | "CommunityBuilding"
-  | "EducationMentorship"
-  | "SocialCauses"
-  | "BusinessEntrepreneurship"
-  | "SpecializedKnowledge";
-
-interface Option {
-  label: string;
-  category: Category;
-  subcategory: Subcategory;
-}
-
-interface Question {
-  question: string;
-  options: Option[];
-}
 
 const PersonalityTest = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<Option | null>(null);
-  const [scores, setScores] = useState<Record<Category, Record<Subcategory, number>>>({
-    passion: {
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      ProblemSolving: 0,
-      Leadership: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0,
-      BusinessEntrepreneurship: 0,
-      SpecializedKnowledge: 0
-    },
-    vocation: {
-      ProblemSolving: 0,
-      Leadership: 0,
-      SpecializedKnowledge: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0,
-      BusinessEntrepreneurship: 0
-    },
-    mission: {
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      ProblemSolving: 0,
-      Leadership: 0,
-      BusinessEntrepreneurship: 0,
-      SpecializedKnowledge: 0
-    },
-    profession: {
-      BusinessEntrepreneurship: 0,
-      SpecializedKnowledge: 0,
-      Leadership: 0,
-      CreativeArts: 0,
-      IntellectualPursuits: 0,
-      PhysicalActivities: 0,
-      ProblemSolving: 0,
-      InterpersonalSkills: 0,
-      CommunityBuilding: 0,
-      EducationMentorship: 0,
-      SocialCauses: 0
-    },
-  });
+  const [selectedOption, setSelectedOption] = useState<typeof questions[number]["options"][number] | null>(null);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const totalQuestions = 18;
   const router = useRouter();
+  const [dominantCategory, setDominantCategory] = useState<string | null>(null);
+  const [secondaryCategory, setSecondaryCategory] = useState<string | null>(null);
 
+  // Set mounted state after the component has rendered
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Load video only when the component is mounted and after a slight delay to avoid timing issues
+  useEffect(() => {
+    if (isMounted) {
+      const timer = setTimeout(() => {
+        setVideoLoaded(true);
+      }, 200); // Delay to ensure component is fully initialized
+
+      return () => clearTimeout(timer); // Clean up timeout on unmount
+    }
+  }, [isMounted]);
+
+  const handleSubmit = () => {
+    if (selectedOption) {
+      setSelectedOption(null);
+      setCurrentQuestion((prev) => prev + 1);
+      if (currentQuestion === questions.length - 1) {
+        // Logic to determine dominant and secondary categories
+        setDominantCategory(calculatedDominant);
+        setSecondaryCategory(calculatedSecondary);
+
+        router.push("/results");
+      }
+    }
+  };
 
   const questions: { question: string; options: { label: string; category: string; subcategory: string }[] }[] = [
     {
@@ -268,131 +230,67 @@ const PersonalityTest = () => {
     },
   ];
 
-  const handleSubmit = () => {
-    if (selectedOption) {
-      const { category, subcategory } = selectedOption;
-      setScores((prevScores) => ({
-        ...prevScores,
-        [category]: {
-          ...prevScores[category],
-          [subcategory]: prevScores[category][subcategory] + 1,
-        },
-      }));
-
-      setSelectedOption(null);
-      setCurrentQuestion((prev) => prev + 1);
-
-      if (currentQuestion === questions.length - 1) {
-        localStorage.setItem("ikigaiScores", JSON.stringify(scores));
-        router.push("/results");
-      }
-    }
-  };
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
-    <motion.div
-      className="min-h-screen flex justify-center items-center"
-      style={{ backgroundColor: colors.background }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="bg-white p-8 rounded-xl shadow-md max-w-2xl w-full">
-
-        {/* Make question container stand out */}
-        <div
-          className="p-6 rounded-lg"
-          style={{
-            backgroundColor: colors.questionBackground,
-            color: colors.questionText,
-            fontFamily: "Akwe Pro, sans-serif"
-          }}
+    <div className="min-h-screen flex flex-col items-center justify-center overflow-hidden relative">
+      {!videoLoaded && (
+        <img
+          src="/images/stars.png"
+          alt="Fallback Background"
+          className="absolute top-0 left-0 w-full h-full object-cover"
+        />
+      )}
+      {videoLoaded && (
+        <video
+          autoPlay
+          loop
+          muted
+          preload="auto"
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover"
         >
-          <p className="text-xl">
+          <source src="/video/stars_video.mp4" type="video/mp4" />
+          <source src="/video/shooting_stars.webm" type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+      )}
+      
+      <div className="relative z-10 w-full max-w-2xl px-4 sm:px-0">
+        <ProgressBar currentQuestion={currentQuestion} totalQuestions={totalQuestions} />
+        <div className="bg-blue-800 bg-opacity-60 backdrop-blur-md rounded-lg p-4 sm:p-8 mt-4 w-full shadow-lg border border-blue-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-100 mb-4 sm:mb-8 font-serif font-akwe">
             {questions[currentQuestion]?.question}
-          </p>
-        </div>
-
-        {/* Answer Buttons */}
-        <motion.div
-          className="grid grid-cols-2 gap-4 mt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {questions[currentQuestion]?.options.map((option, index) => (
-            <motion.button
-              key={index}
-              onClick={() => setSelectedOption(option)}
-              whileTap={{ scale: 0.9, backgroundColor: colors.hover }}
-              className={`p-6 border rounded-lg text-lg font-medium transition-transform transform ${
-                selectedOption?.label === option.label
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-800"
-              }`}
-              style={{
-                fontFamily: "Akwe Pro, sans-serif",
-                backgroundColor:
-                  selectedOption?.label === option.label
-                    ? colors.primary
-                    : colors.white,
-                color:
-                  selectedOption?.label === option.label
-                    ? colors.white
-                    : colors.secondary,
-              }}
-            >
-              {option.label}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {/* Submit Button */}
-        <Button
-          onClick={handleSubmit}
-          disabled={!selectedOption}
-          className="w-full mt-8"
-          style={{
-            backgroundColor: colors.primary,
-            color: colors.white,
-            fontFamily: "Akwe Pro, sans-serif",
-          }}
-        >
-          {currentQuestion < questions.length - 1 ? "Next Question" : "Submit"}
-        </Button>
-
-        {/* Progress Bar */}
-        <div className="mt-6">
-          <div className="w-full max-w-md mx-auto space-y-4">
-            <motion.div
-              className="flex justify-between items-center"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              {[...Array(questions.length)].map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-4 h-4 rounded-full transition-all duration-500 ${
-                    index < currentQuestion
-                      ? "bg-primary scale-100"
-                      : index === currentQuestion
-                      ? "bg-primary scale-125"
-                      : "bg-secondary"
-                  }`}
-                />
-              ))}
-            </motion.div>
-            <p
-              className="text-center text-sm"
-              style={{ color: colors.primary, fontFamily: "Akwe Pro, sans-serif" }}
-            >
-              Question {currentQuestion + 1} of {questions.length}
-            </p>
+          </h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {questions[currentQuestion]?.options.map((option, index) => (
+              <button
+                key={index}
+                className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus:bg-blue-800 text-blue-100 font-medium py-2 px-4 rounded-lg transition duration-50 ease-in-out transform hover:scale-105"
+                onClick={() => setSelectedOption(option)}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedOption}
+            className="w-full mt-4 sm:mt-8 bg-blue-500 text-white py-2 px-4 rounded-lg transition duration-300 hover:bg-blue-600"
+          >
+            {currentQuestion < questions.length - 1 ? "Next Question" : "Submit"}
+          </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

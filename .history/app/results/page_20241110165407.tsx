@@ -271,11 +271,6 @@ const ResultsPage = () => {
     { name: "Profession", value: scores.profession.BusinessEntrepreneurship + scores.profession.SpecializedKnowledge + scores.profession.Leadership },
   ];
 
-  function formatSubcategoryLabel(subcategory: string): string {
-    // Convert camelCase to space-separated words
-    return subcategory.replace(/([A-Z])/g, ' $1').trim();
-  }
-
   const subcategoryData = Object.keys(scores[dominantCategory])
     .filter((subcategory) => scores[dominantCategory][subcategory as Subcategory] > 0)
     .map((subcategory) => ({

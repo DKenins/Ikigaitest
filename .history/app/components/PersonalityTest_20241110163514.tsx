@@ -2,94 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useAnimation } from "framer-motion"; 
 
-interface Star {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  vx: number;
-  vy: number;
-}
-
-interface ShootingStar {
-  id: number;
-  startX: number;
-  startY: number;
-  endX: number;
-  endY: number;
-}
-
-const generateStar = (id: number, width: number, height: number): Star => ({
-  id,
-  x: Math.random() * width,
-  y: Math.random() * height,
-  size: Math.random() * 3 + 1,
-  color: ["#ffffff", "#e6f2ff", "#b3d9ff", "#80c1ff"][Math.floor(Math.random() * 4)],
-  vx: (Math.random() - 0.5) * 0.5,
-  vy: (Math.random() - 0.5) * 0.5,
-});
-
-const generateShootingStar = (width: number, height: number): ShootingStar => ({
-  id: Date.now(),
-  startX: Math.random() * width,
-  startY: 0,
-  endX: Math.random() * width,
-  endY: height,
-});
-
-const StarComponent: React.FC<{ star: Star }> = ({ star }) => {
-  const controls = useAnimation();
-
-  useEffect(() => {
-    controls.start({
-      scale: [1, 1.5, 1],
-      transition: {
-        duration: 2 + Math.random() * 2,
-        repeat: Infinity,
-        repeatType: "reverse",
-      },
-    });
-  }, [controls]);
-
-  return (
-    <motion.div
-      className="absolute rounded-full"
-      style={{
-        left: star.x,
-        top: star.y,
-        width: star.size,
-        height: star.size,
-        backgroundColor: star.color,
-      }}
-      animate={controls}
-    />
-  );
-};
-
-const ShootingStarComponent: React.FC<{ star: ShootingStar }> = ({ star }) => {
-  return (
-    <motion.div
-      className="absolute w-1 h-1 bg-white rounded-full"
-      style={{
-        left: star.startX,
-        top: star.startY,
-      }}
-      animate={{
-        x: star.endX - star.startX,
-        y: star.endY - star.startY,
-        opacity: [1, 1, 0],
-      }}
-      transition={{
-        duration: 1,
-        ease: "easeOut",
-      }}
-    />
-  );
-};
-
+ 
 const ProgressBar: React.FC<{ currentQuestion: number, totalQuestions: number }> = ({ currentQuestion, totalQuestions }) => {
   return (
     <div className="w-full max-w-2xl mx-auto mb-8">
@@ -111,19 +25,40 @@ const ProgressBar: React.FC<{ currentQuestion: number, totalQuestions: number }>
 const PersonalityTest = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<typeof questions[number]["options"][number] | null>(null);
-  const [stars, setStars] = useState<Star[]>([]);
-  const [shootingStars, setShootingStars] = useState<ShootingStar[]>([]);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
-  const animationRef = useRef<number>();
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const totalQuestions = 18;
   const router = useRouter();
+  const [dominantCategory, setDominantCategory] = useState<string | null>(null);
+  const [secondaryCategory, setSecondaryCategory] = useState<string | null>(null);
+
+  // Set mounted state after the component has rendered
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Load video only when the component is mounted and after a slight delay to avoid timing issues
+  useEffect(() => {
+    if (isMounted) {
+      const timer = setTimeout(() => {
+        setVideoLoaded(true);
+      }, 200); // Delay to ensure component is fully initialized
+
+      return () => clearTimeout(timer); // Clean up timeout on unmount
+    }
+  }, [isMounted]);
 
   const handleSubmit = () => {
     if (selectedOption) {
       setSelectedOption(null);
       setCurrentQuestion((prev) => prev + 1);
       if (currentQuestion === questions.length - 1) {
-        router.push("/results");
+        // Calculate categories
+        const dominant = calculateDominantCategory();
+        const secondary = calculateSecondaryCategory();
+        // Navigate to results page with parameters
+        router.push(`/results?dominant=${dominant}&secondary=${secondary}`);
       }
     }
   };
@@ -306,75 +241,55 @@ const PersonalityTest = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    if (windowSize.width && windowSize.height) {
-      setStars(Array.from({ length: 100 }, (_, i) => generateStar(i, windowSize.width, windowSize.height)));
-    }
-  }, [windowSize]);
-
-  useEffect(() => {
-    const updateStars = () => {
-      setStars((prevStars) =>
-        prevStars.map((star) => {
-          let { x, y, vx, vy } = star;
-          x += vx;
-          y += vy;
-          if (x <= 0 || x >= windowSize.width) vx = -vx;
-          if (y <= 0 || y >= windowSize.height) vy = -vy;
-
-          return { ...star, x, y, vx, vy };
-        })
-      );
-
-      if (Math.random() < 0.02) {
-        setShootingStars((prev) => [...prev, generateShootingStar(windowSize.width, windowSize.height)]);
-      }
-
-      setShootingStars((prev) => prev.filter((star) => Date.now() - star.id < 1000));
-
-      animationRef.current = requestAnimationFrame(updateStars);
-    };
-    animationRef.current = requestAnimationFrame(updateStars);
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [windowSize]);
-
   return (
-    <div className="min-h-screen bg-blue-900 flex flex-col items-center justify-center overflow-hidden relative">
-      {stars.map((star) => (
-        <StarComponent key={star.id} star={star} />
-      ))}
-      {shootingStars.map((star) => (
-        <ShootingStarComponent key={star.id} star={star} />
-      ))}
-
-      <ProgressBar currentQuestion={currentQuestion} totalQuestions={totalQuestions} />
-
-      <div className="bg-blue-800 bg-opacity-50 backdrop-blur-md rounded-lg p-8 w-full max-w-2xl z-10"> {/* Increased bg-opacity for a lighter background */}
-        <h1 className="text-3xl font-bold text-center text-blue-100 mb-8 font-serif font-akwe"> {/* Added font-akwe class */}
-          {questions[currentQuestion]?.question}  {/* Updated to show the current question */}
-        </h1>
-        <div className="grid grid-cols-2 gap-4">
-          {questions[currentQuestion]?.options.map((option, index) => (
-            <button
-              key={index}
-              className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus:bg-blue-800 text-blue-100 font-medium py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105" // Added active and focus states for click animation
-              onClick={() => setSelectedOption(option)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={handleSubmit}
-          disabled={!selectedOption}
-          className="w-full mt-8 bg-blue-500 text-white py-2 px-4 rounded-lg transition duration-300 hover:bg-blue-600"
+    <div className="min-h-screen flex flex-col items-center justify-center overflow-hidden relative">
+      {!videoLoaded && (
+        <img
+          src="/images/stars.png"
+          alt="Fallback Background"
+          className="absolute top-0 left-0 w-full h-full object-cover"
+        />
+      )}
+      {videoLoaded && (
+        <video
+          autoPlay
+          loop
+          muted
+          preload="auto"
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover"
         >
-          {currentQuestion < questions.length - 1 ? "Next Question" : "Submit"}
-        </button>
+          <source src="/video/stars_video.mp4" type="video/mp4" />
+          <source src="/video/shooting_stars.webm" type="video/webm" />
+          Your browser does not support the video tag.
+        </video>
+      )}
+      
+      <div className="relative z-10 w-full max-w-2xl px-4 sm:px-0">
+        <ProgressBar currentQuestion={currentQuestion} totalQuestions={totalQuestions} />
+        <div className="bg-blue-800 bg-opacity-60 backdrop-blur-md rounded-lg p-4 sm:p-8 mt-4 w-full shadow-lg border border-blue-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-100 mb-4 sm:mb-8 font-serif font-akwe">
+            {questions[currentQuestion]?.question}
+          </h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {questions[currentQuestion]?.options.map((option, index) => (
+              <button
+                key={index}
+                className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus:bg-blue-800 text-blue-100 font-medium py-2 px-4 rounded-lg transition duration-50 ease-in-out transform hover:scale-105"
+                onClick={() => setSelectedOption(option)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedOption}
+            className="w-full mt-4 sm:mt-8 bg-blue-500 text-white py-2 px-4 rounded-lg transition duration-300 hover:bg-blue-600"
+          >
+            {currentQuestion < questions.length - 1 ? "Next Question" : "Submit"}
+          </button>
+        </div>
       </div>
     </div>
   );
