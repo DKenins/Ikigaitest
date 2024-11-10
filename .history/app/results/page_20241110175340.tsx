@@ -229,10 +229,6 @@ const formatSubcategoryLabel = (subcategory: string): string => {
   return subcategory.replace(/([A-Z])/g, ' $1').trim();
 };
 
-const saveScoresToLocalStorage = (scores: Record<Category, Record<Subcategory, number>>) => {
-  localStorage.setItem("ikigaiScores", JSON.stringify(scores));
-};
-
 const ResultsPage = () => {
   const [scores, setScores] = useState<Record<Category, Record<Subcategory, number>>>({
     passion: {
@@ -338,6 +334,10 @@ const ResultsPage = () => {
 
   // Generate dynamic summary
   const dynamicSummary = generateDynamicSummary(dominantCategory, secondaryCategory, Object.keys(scores[dominantCategory]));
+
+  const saveScoresToLocalStorage = (scores: Record<Category, Record<Subcategory, number>>) => {
+    localStorage.setItem("ikigaiScores", JSON.stringify(scores));
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">

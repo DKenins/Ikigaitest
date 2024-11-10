@@ -229,10 +229,6 @@ const formatSubcategoryLabel = (subcategory: string): string => {
   return subcategory.replace(/([A-Z])/g, ' $1').trim();
 };
 
-const saveScoresToLocalStorage = (scores: Record<Category, Record<Subcategory, number>>) => {
-  localStorage.setItem("ikigaiScores", JSON.stringify(scores));
-};
-
 const ResultsPage = () => {
   const [scores, setScores] = useState<Record<Category, Record<Subcategory, number>>>({
     passion: {
@@ -295,26 +291,33 @@ const ResultsPage = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
-    const storedScores = JSON.parse(localStorage.getItem("ikigaiScores") || "{}") as Record<Category, Record<Subcategory, number>>;
-    setScores(storedScores);
+    try {
+      const storedScores = JSON.parse(localStorage.getItem("ikigaiScores") || "{}");
+      if (!storedScores || typeof storedScores !== "object") {
+        console.warn("Invalid scores structure. Using default scores.");
+        setScores(defaultScores); // Fallback to default scores
+        return;
+      }
+      setScores(storedScores);
 
-    // Save scores to local storage whenever they are updated
-    saveScoresToLocalStorage(storedScores);
+      const categoryTotals: Record<Category, number> = {
+        passion: 0,
+        vocation: 0,
+        mission: 0,
+        profession: 0,
+      };
 
-    const categoryTotals: Record<Category, number> = {
-      passion: 0,
-      vocation: 0,
-      mission: 0,
-      profession: 0,
-    };
+      for (const category in categoryTotals) {
+        categoryTotals[category as Category] = Object.values(storedScores[category as Category] || {}).reduce((acc: number, val: number) => acc + val, 0);
+      }
 
-    for (const category in categoryTotals) {
-      categoryTotals[category as Category] = Object.values(storedScores[category as Category] || {}).reduce((acc: number, val: number) => acc + val, 0);
+      const sortedCategories = Object.keys(categoryTotals).sort((a, b) => categoryTotals[b as Category] - categoryTotals[a as Category]);
+      setDominantCategory(sortedCategories[0] as Category);
+      setSecondaryCategory(sortedCategories[1] as Category);
+    } catch (error) {
+      console.error("Error parsing ikigaiScores from localStorage:", error);
+      setScores(defaultScores); // Fallback to default scores
     }
-
-    const sortedCategories = Object.keys(categoryTotals).sort((a, b) => categoryTotals[b as Category] - categoryTotals[a as Category]);
-    setDominantCategory(sortedCategories[0] as Category);
-    setSecondaryCategory(sortedCategories[1] as Category);
   }, []);
 
   if (!dominantCategory || !secondaryCategory) return null;
@@ -338,6 +341,10 @@ const ResultsPage = () => {
 
   // Generate dynamic summary
   const dynamicSummary = generateDynamicSummary(dominantCategory, secondaryCategory, Object.keys(scores[dominantCategory]));
+
+  const saveScoresToLocalStorage = (scores: Record<Category, Record<Subcategory, number>>) => {
+    localStorage.setItem("ikigaiScores", JSON.stringify(scores));
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
