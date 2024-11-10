@@ -279,9 +279,7 @@ const PersonalityTest = () => {
             {questions[currentQuestion]?.options.map((option, index) => (
               <button
                 key={index}
-                className={`bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-blue-100 font-medium py-2 px-4 rounded-lg transition duration-50 ease-in-out transform hover:scale-105 ${
-                  selectedOption === option ? "selected-option" : ""
-                }`}
+                className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus:bg-blue-800 text-blue-100 font-medium py-2 px-4 rounded-lg transition duration-50 ease-in-out transform hover:scale-105"
                 onClick={() => setSelectedOption(option)}
               >
                 {option.label}

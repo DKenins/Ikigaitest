@@ -33,6 +33,7 @@ const PersonalityTest = () => {
   // Set mounted state after the component has rendered
   useEffect(() => {
     setIsMounted(true);
+    localStorage.removeItem("ikigaiScores"); // Clear scores on start
   }, []);
 
   // Load video only when the component is mounted and after a slight delay to avoid timing issues
@@ -279,9 +280,7 @@ const PersonalityTest = () => {
             {questions[currentQuestion]?.options.map((option, index) => (
               <button
                 key={index}
-                className={`bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-blue-100 font-medium py-2 px-4 rounded-lg transition duration-50 ease-in-out transform hover:scale-105 ${
-                  selectedOption === option ? "selected-option" : ""
-                }`}
+                className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus:bg-blue-800 text-blue-100 font-medium py-2 px-4 rounded-lg transition duration-50 ease-in-out transform hover:scale-105"
                 onClick={() => setSelectedOption(option)}
               >
                 {option.label}
@@ -291,7 +290,7 @@ const PersonalityTest = () => {
           <button
             onClick={handleSubmit}
             disabled={!selectedOption}
-            className="w-full mt-4 sm:mt-8 bg-[#F5EFEF] text-black py-2 px-4 rounded-lg transition duration-300"
+            className="w-full mt-4 sm:mt-8 bg-blue-500 text-white py-2 px-4 rounded-lg transition duration-300 hover:bg-blue-600"
           >
             {currentQuestion < questions.length - 1 ? "Next Question" : "Submit"}
           </button>

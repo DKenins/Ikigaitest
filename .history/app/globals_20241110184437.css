@@ -130,8 +130,3 @@ button:active {
 .next-question-button:active {
   background-color: #991B1B; /* Even darker red on active */
 }
-
-.selected-option {
-  background-color: #1E40AF; /* Darker blue for selected state */
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.6); /* Blue outline */
-}
