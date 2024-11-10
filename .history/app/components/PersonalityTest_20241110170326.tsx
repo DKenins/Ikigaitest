@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
- 
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // Use the correct import
+
 const ProgressBar: React.FC<{ currentQuestion: number, totalQuestions: number }> = ({ currentQuestion, totalQuestions }) => {
   return (
     <div className="w-full max-w-2xl mx-auto mb-8">
@@ -10,61 +10,18 @@ const ProgressBar: React.FC<{ currentQuestion: number, totalQuestions: number }>
         {Array.from({ length: totalQuestions }, (_, i) => (
           <div
             key={i}
-            className={`w-4 h-4 rounded-full ${
-              i < currentQuestion ? "bg-blue-500" : "bg-blue-200"
-            }`}
+            className={`w-4 h-4 rounded-full ${i < currentQuestion ? "bg-blue-500" : "bg-blue-200"}`}
           />
         ))}
       </div>
-      <p className="text-center text-blue-200 mt-2">Question {currentQuestion} of {totalQuestions}</p>
+      <p className="text-center text-blue-200 mt-2">
+        Question {currentQuestion + 1} of {totalQuestions}
+      </p>
     </div>
   );
 };
 
 const PersonalityTest = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<typeof questions[number]["options"][number] | null>(null);
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const totalQuestions = 18;
-  const router = useRouter();
-
-  // Set mounted state after the component has rendered
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Load video only when the component is mounted and after a slight delay to avoid timing issues
-  useEffect(() => {
-    if (isMounted) {
-      const timer = setTimeout(() => {
-        setVideoLoaded(true);
-      }, 200); // Delay to ensure component is fully initialized
-
-      return () => clearTimeout(timer); // Clean up timeout on unmount
-    }
-  }, [isMounted]);
-
-  const handleSubmit = () => {
-    if (selectedOption) {
-      const storedScores = JSON.parse(localStorage.getItem("ikigaiScores") || "{}");
-      const updatedScores = {
-        ...storedScores,
-        [selectedOption.category]: {
-          ...storedScores[selectedOption.category],
-          [selectedOption.subcategory]: (storedScores[selectedOption.category]?.[selectedOption.subcategory] || 0) + 1,
-        },
-      };
-      localStorage.setItem("ikigaiScores", JSON.stringify(updatedScores));
-
-      setSelectedOption(null);
-      setCurrentQuestion((prev) => prev + 1);
-      if (currentQuestion === questions.length - 1) {
-        router.push("/results");
-      }
-    }
-  };
 
   const questions: { question: string; options: { label: string; category: string; subcategory: string }[] }[] = [
     {
@@ -235,14 +192,40 @@ const PersonalityTest = () => {
   ];
 
   
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<{ label: string; category: string; subcategory: string } | null>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const totalQuestions = questions.length;
+  const router = useRouter();
+
   useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      const timer = setTimeout(() => {
+        setVideoLoaded(true);
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isMounted]);
+
+  const handleSubmit = () => {
+    if (selectedOption) {
+      const updatedScores = { ...scores }; // Assuming you have a way to update scores based on user selections
+      localStorage.setItem("ikigaiScores", JSON.stringify(updatedScores)); // Save scores to localStorage
+      setSelectedOption(null);
+      setCurrentQuestion((prev) => prev + 1);
+      if (currentQuestion === questions.length - 1) {
+        const dominant = "DominantCategory"; // Replace with calculateDominantCategory();
+        const secondary = "SecondaryCategory"; // Replace with calculateSecondaryCategory();
+        router.push(`/results?dominant=${dominant}&secondary=${secondary}`);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center overflow-hidden relative">
@@ -267,11 +250,11 @@ const PersonalityTest = () => {
           Your browser does not support the video tag.
         </video>
       )}
-      
+
       <div className="relative z-10 w-full max-w-2xl px-4 sm:px-0">
         <ProgressBar currentQuestion={currentQuestion} totalQuestions={totalQuestions} />
         <div className="bg-blue-800 bg-opacity-60 backdrop-blur-md rounded-lg p-4 sm:p-8 mt-4 w-full shadow-lg border border-blue-600">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-100 mb-4 sm:mb-8 font-serif font-akwe">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-blue-100 mb-4 sm:mb-8 font-serif">
             {questions[currentQuestion]?.question}
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

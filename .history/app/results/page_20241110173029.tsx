@@ -388,12 +388,12 @@ const ResultsPage = () => {
             <Card
               title="Dominant Category"
               subtitle={<span className="text-xl font-bold text-white">{dominantReport.title}</span>}
-              value={mainCategoryData.find((data) => data.name.toLowerCase() === dominantReport.title.toLowerCase())?.value.toString() || "0"}
+              value={mainCategoryData.find((data) => data.name === dominantReport.title)?.value.toString() || "0"}
             />
             <Card
               title="Secondary Category"
               subtitle={<span className="text-xl font-bold text-white">{secondaryReport.title}</span>}
-              value={mainCategoryData.find((data) => data.name.toLowerCase() === secondaryReport.title.toLowerCase())?.value.toString() || "0"}
+              value={mainCategoryData.find((data) => data.name === secondaryReport.title)?.value.toString() || "0"}
             />
           </div>
 

@@ -302,7 +302,7 @@ const ResultsPage = () => {
     };
 
     for (const category in categoryTotals) {
-      categoryTotals[category as Category] = Object.values(storedScores[category as Category] || {}).reduce((acc: number, val: number) => acc + val, 0);
+      categoryTotals[category as Category] = Object.values(storedScores[category as Category]).reduce((acc: number, val: number) => acc + val, 0);
     }
 
     const sortedCategories = Object.keys(categoryTotals).sort((a, b) => categoryTotals[b as Category] - categoryTotals[a as Category]);
@@ -388,12 +388,12 @@ const ResultsPage = () => {
             <Card
               title="Dominant Category"
               subtitle={<span className="text-xl font-bold text-white">{dominantReport.title}</span>}
-              value={mainCategoryData.find((data) => data.name.toLowerCase() === dominantReport.title.toLowerCase())?.value.toString() || "0"}
+              value={mainCategoryData.find((data) => data.name === dominantReport.title)?.value.toString() || "0"}
             />
             <Card
               title="Secondary Category"
               subtitle={<span className="text-xl font-bold text-white">{secondaryReport.title}</span>}
-              value={mainCategoryData.find((data) => data.name.toLowerCase() === secondaryReport.title.toLowerCase())?.value.toString() || "0"}
+              value={mainCategoryData.find((data) => data.name === secondaryReport.title)?.value.toString() || "0"}
             />
           </div>
 

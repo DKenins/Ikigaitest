@@ -48,16 +48,6 @@ const PersonalityTest = () => {
 
   const handleSubmit = () => {
     if (selectedOption) {
-      const storedScores = JSON.parse(localStorage.getItem("ikigaiScores") || "{}");
-      const updatedScores = {
-        ...storedScores,
-        [selectedOption.category]: {
-          ...storedScores[selectedOption.category],
-          [selectedOption.subcategory]: (storedScores[selectedOption.category]?.[selectedOption.subcategory] || 0) + 1,
-        },
-      };
-      localStorage.setItem("ikigaiScores", JSON.stringify(updatedScores));
-
       setSelectedOption(null);
       setCurrentQuestion((prev) => prev + 1);
       if (currentQuestion === questions.length - 1) {
